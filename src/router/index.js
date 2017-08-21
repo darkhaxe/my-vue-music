@@ -8,6 +8,7 @@ import Recommend from 'components/recommend/recommend'
 import Rank from 'components/rank/rank'
 import Search from 'components/search/search'
 import Singer from 'components/singer/singer'
+import SingerDetail from 'components/singer-detail/singer-detail'
 
 Vue.use(Router)
 
@@ -31,7 +32,13 @@ export default new Router({
     },
     {
       path: '/singer',
-      component: Singer
+      component: Singer,
+      childeren: [ // 二级路由
+        {
+          path: ':id', // 冒号标记id为变量,可传入
+          component: SingerDetail
+        }
+      ]
     }
   ]
 })

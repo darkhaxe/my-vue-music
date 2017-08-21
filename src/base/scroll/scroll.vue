@@ -20,7 +20,7 @@
         type: Array,
         default: null
       },
-      listScroll: { // 是否监听scroll滚动事件
+      listenScroll: { // 是否监听scroll滚动事件
         type: Boolean,
         default: false
       }

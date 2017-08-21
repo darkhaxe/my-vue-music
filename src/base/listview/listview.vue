@@ -2,7 +2,7 @@
   <scroll class="listview"
           :data="data"
           ref="listview"
-          :listenScroll="listenScroll"
+          :listen-scroll="listenScroll"
           :probeType="probeType"
           @scroll="scroll"
   >
@@ -10,7 +10,7 @@
       <li v-for="group in data" class="list-group" ref="listGroup">
         <h2 class="list-group-title"> {{group.title}}</h2><!-- 顶部的歌手对应title-->
         <ul>
-          <li v-for="item in group.items" class="list-group-item">
+          <li @click="selectItem(item)" v-for="item in group.items" class="list-group-item">
             <img class="avatar" v-lazy="item.avatar"/>
             <span class="name">{{item.name}}</span>
           </li>
@@ -27,6 +27,13 @@
         </li>
       </ul>
     </div>
+    <!--固定标题 -->
+    <div class="list-fixed" ref="fixed" v-show="fixedTitle">
+      <div class="fixed-title">{{fixedTitle}} </div>
+    </div>
+    <div v-show="!data.length" class="loading-container">
+      <loading></loading>
+    </div>
   </scroll>
 </template>
 
@@ -34,6 +41,7 @@
   import Scroll from 'base/scroll/scroll'
   import { getData } from 'common/js/dom'
   const ANCHOR_HEIGHT = 18 // 18来自css定义个每个元素的高度
+  const TITLE_HEIGHT = 30 // 固定位置的高度
 
   export default {
     created() {
@@ -47,7 +55,8 @@
       return {
         scrollY: -1,
         currentIndex: 0, // 右侧入口高亮元素的index
-        listHeight: []
+        listHeight: [], // 每行的纵坐标y值 [0, 760, 1030, 1370, 1780, 1910, 2110, 2450, 2720, 3060, 3190, 3950, 4430, 4700, 4900, 5100, 5370, 5570, 5980, 6460, 7010, 7560, 7900, 9010]
+        diff: 0 // 当前区块的title栏与当前title的距离
       }
     },
     props: { // 外部传入的数据
@@ -61,9 +70,22 @@
         return this.data.map((group) => {
           return group.title.substr(0, 1)
         })
+      },
+      fixedTitle() {
+        if (this.scrollY < 0) {
+
+        }
+        // data内容在vue-devtool看
+        return this.data[this.currentIndex] ? this.data[this.currentIndex].title : ''
       }
     },
     methods: {
+      /**
+       * 派发点击事件到组件外部,使用$emit
+       */
+      selectItem(item) {
+        this.$emit('select', item)
+      },
       /**
        * 监听touchstart事件
        * 点击移动到对应字母开头的歌手列表
@@ -74,8 +96,7 @@
         let firstTouch = e.touches[0] // 开始位置
         this.touch.y1 = firstTouch.pageY
         this.touch.anchorIndex = anchorIndex
-        // 调用scroll组件 传入参数
-        this.$refs.listview.scrollToElement(this.$refs.listGroup[anchorIndex], 0) // 0代表动画时间
+        this._scrollTo(anchorIndex)
       },
       /**
        * 监听touchmove事件;
@@ -90,19 +111,35 @@
         this.touch.y2 = firstTouch.pageY
         let delta = (this.touch.y2 - this.touch.y1) / ANCHOR_HEIGHT | 0 // 地板除取整
         let anchorIndex = parseInt(this.touch.anchorIndex) + delta
-        // 调用scroll组件 传入参数
-        this.$refs.listview.scrollToElement(this.$refs.listGroup[anchorIndex], 0)
+        this._scrollTo(anchorIndex)
       },
       /**
        * pos为接收scroll组件派发的位置
        * @param pos
        */
       scroll(pos) {
-        this.scrollY = pos.Y
+//        console.log(pos)
+        this.scrollY = pos.y
+      },
+      _scrollTo: function (anchorIndex) {
+        // console.log(this.listHeight)
+        if (!anchorIndex && anchorIndex !== 0) {
+          return
+        }
+        // onShortcutTouchMove事件中,在最底与最顶的位置滑动,由于事件未结束可导致计算的anchorIndex超过预期
+        if (anchorIndex < 0) {
+          anchorIndex = 0
+        } else if (anchorIndex > this._maxAnchorIndex()) {
+          anchorIndex = this._maxAnchorIndex()
+        }
+        // 手动改变scrollY,触发更新样式右侧入口字母列表的样式
+        this.scrollY = -this.listHeight[anchorIndex]
+        // 调用scroll组件 传入参数
+        this.$refs.listview.scrollToElement(this.$refs.listGroup[anchorIndex], 0)
       },
       /**
        * 实现: vue的data中存放scrollY,该变量变化将触发watch事件,
-       * watch事件调用_calculateHeight重新计算高度变化
+       * watch事件调用_calculateHeight重新计算高度数组
        * @private
        */
       _calculateHeight() {
@@ -114,6 +151,13 @@
           height += list[i].clientHeight
           this.listHeight.push(height)
         }
+//        console.log('this.$refs.listGroup长度=' + list.length + '-- 高度数组长度=' + this.listHeight.length)
+      },
+      /**
+       * 右侧快速入口的index的最大值
+       */
+      _maxAnchorIndex: function () {
+        return this.listHeight - 2
       }
     },
     watch: {
@@ -130,23 +174,32 @@
        * @param newY
        */
       scrollY(newY) {
+//        console.log(`newy=${newY}`)
         const listHeight = this.listHeight
         // 光标在顶部，newY>0
         if (newY > 0) {
           this.currentIndex = 0
           return
         }
-        // 光标在中间部分
+        // 光标在中间部分 newY<0
         for (let i = 0; i < listHeight.length - 1; i++) {
           let low = listHeight[i]
           let high = listHeight[i + 1]
-          if (-newY >= low && -newY < high) {
+          if (-newY >= low && -newY < high) { // 在数组的区间内则可算出右侧index=i
             this.currentIndex = i
             return
           }
         }
         // 底部
-        this.currentIndex = listHeight.length - 2
+        this.currentIndex = this._maxAnchorIndex()
+      },
+      diff(newVal) {
+        let fixedTop = (newVal > 0 && newVal < TITLE_HEIGHT) ? newVal - TITLE_HEIGHT : 0
+        if (this.fixedTop === fixedTop) { // 假如未达到顶端,不修改dom
+          return
+        }
+        this.fixedTop = fixedTop
+        this.$refs.fixed.style.transform = `translate3d(0,${fixedTop}px,0)` // todo 未理解 @170714
       }
     },
     components: {
