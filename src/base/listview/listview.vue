@@ -39,19 +39,21 @@
 
 <script type="text/ecmascript-6">
   import Scroll from 'base/scroll/scroll'
+  import Loading from 'base/loading/loading'
   import { getData } from 'common/js/dom'
+
   const ANCHOR_HEIGHT = 18 // 18来自css定义个每个元素的高度
   const TITLE_HEIGHT = 30 // 固定位置的高度
 
   export default {
-    created() {
+    created () {
       // 共享变量 不需要观测touch的变化,故不定义在vue的data中
       this.touch = {}
       // 传入scroll组件的变量,参见dom中写法
       this.listenScroll = true
       this.probeType = 3
     },
-    data() {
+    data () {
       return {
         scrollY: -1,
         currentIndex: 0, // 右侧入口高亮元素的index
@@ -66,12 +68,12 @@
       }
     },
     computed: {
-      shortcutList() {
+      shortcutList () {
         return this.data.map((group) => {
           return group.title.substr(0, 1)
         })
       },
-      fixedTitle() {
+      fixedTitle () {
         if (this.scrollY < 0) {
 
         }
@@ -83,7 +85,7 @@
       /**
        * 派发点击事件到组件外部,使用$emit
        */
-      selectItem(item) {
+      selectItem (item) {
         this.$emit('select', item)
       },
       /**
@@ -91,7 +93,7 @@
        * 点击移动到对应字母开头的歌手列表
        * @param e event
        */
-      onShortcutTouchStart(e) {
+      onShortcutTouchStart (e) {
         let anchorIndex = getData(e.target, 'index')
         let firstTouch = e.touches[0] // 开始位置
         this.touch.y1 = firstTouch.pageY
@@ -106,7 +108,7 @@
        * 3.调用better-scroll跳转到响应的位置
        * @param e
        */
-      onShortcutTouchMove(e) {
+      onShortcutTouchMove (e) {
         let firstTouch = e.touches[0]
         this.touch.y2 = firstTouch.pageY
         let delta = (this.touch.y2 - this.touch.y1) / ANCHOR_HEIGHT | 0 // 地板除取整
@@ -117,7 +119,7 @@
        * pos为接收scroll组件派发的位置
        * @param pos
        */
-      scroll(pos) {
+      scroll (pos) {
 //        console.log(pos)
         this.scrollY = pos.y
       },
@@ -142,7 +144,7 @@
        * watch事件调用_calculateHeight重新计算高度数组
        * @private
        */
-      _calculateHeight() {
+      _calculateHeight () {
         this.listHeight = []
         const list = this.$refs.listGroup
         let height = 0
@@ -164,7 +166,7 @@
       /**
        * data变化时重新计算高度
        */
-      data() {
+      data () {
         setTimeout(() => {
           this._calculateHeight()
         }, 20)
@@ -173,7 +175,7 @@
        * 监听scrollY的变化
        * @param newY
        */
-      scrollY(newY) {
+      scrollY (newY) {
 //        console.log(`newy=${newY}`)
         const listHeight = this.listHeight
         // 光标在顶部，newY>0
@@ -193,7 +195,7 @@
         // 底部
         this.currentIndex = this._maxAnchorIndex()
       },
-      diff(newVal) {
+      diff (newVal) {
         let fixedTop = (newVal > 0 && newVal < TITLE_HEIGHT) ? newVal - TITLE_HEIGHT : 0
         if (this.fixedTop === fixedTop) { // 假如未达到顶端,不修改dom
           return
@@ -203,7 +205,7 @@
       }
     },
     components: {
-      Scroll
+      Scroll, Loading
     }
   }
 </script>

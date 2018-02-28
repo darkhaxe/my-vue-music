@@ -1,6 +1,11 @@
 <template>
   <div class="singer">
-    <list-view @select="selectSinger" :data="singerList"></list-view>
+    <!-- ******************* topic:父子组件的交互 *******************
+     router-view代表挂载的singer-detail组件 从歌手列表进入歌手详情 路由配置在router/index.js配置了
+    就是children:[...] 列表引用了listview组件来实现,因此需要在listview中获取点击的项目,回传到本组件(父组件)
+    因此@select(v-bind select方法) 交互详见listview写法
+    -->
+    <list-view @select="selectSinger" :data="singerList" ref="list"></list-view>
     <router-view></router-view>
   </div>
 
@@ -11,26 +16,34 @@
   import { ERR_OK } from 'api/config'
   import Singer from 'common/js/singer'
   import ListView from 'base/listview/listview'
+  import { mapMutations } from 'vuex'
+
   const HOT_NAME = '热门'
   const HOY_SINGER_LEN = 10
 
-  export default{
-    data() {
+  export default {
+    data () {
       return {
         singerList: []
       }
     },
-    created() {
+    created () {
       this._getSingerList()
     },
-    components: {ListView},
     methods: {
-      selectSinger(singer) {
+      // 'SET_SINGER'对应mutations中的方法,在此配置就可以在本页面中提交mutation
+      // 此处写数据到store,从store取数据在singerDetail
+      ...mapMutations({
+        setSinger: 'SET_SINGER'
+      }),
+      selectSinger (singer) {
         this.$router.push({
           path: `singer/${singer.id}`
         })
+        // 等价 this.$store.commit('SET_SINGER',singer)
+        this.setSinger(singer)
       },
-      _getSingerList() {
+      _getSingerList () {
         getSingerList().then((res) => {
           if (res.code === ERR_OK) {
             this.singerList = this._normalizeSinger(res.data.list)
@@ -43,7 +56,7 @@
        * @param list
        * @private
        */
-      _normalizeSinger(list) {
+      _normalizeSinger (list) {
         // map = {
         //  [{title:'热门',items:[]},...],
         //  [{title:'a',items:[]},{title:'b',items:[]},...]
@@ -86,7 +99,8 @@
         return hotSinger.concat(alphabetSinger) // 拼接成完整的一维数组
       }
 
-    }
+    },
+    components: {ListView}
 
   }
 </script>

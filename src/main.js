@@ -5,6 +5,8 @@ import 'common/stylus/index.styl'
 import fastclick from 'fastclick'
 import router from './router'
 import VueLazyLoad from 'vue-lazyload'
+//注册store
+import store from './store'
 
 // 解决整个页面的点击事件的300ms延迟的问题
 fastclick.attach(document.body)
@@ -15,6 +17,7 @@ Vue.use(VueLazyLoad, {
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
-  render: h => h(App),
-  router // 路由配置
+  router, // 路由配置
+  store,
+  render: h => h(App)
 })

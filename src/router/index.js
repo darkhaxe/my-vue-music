@@ -33,7 +33,7 @@ export default new Router({
     {
       path: '/singer',
       component: Singer,
-      childeren: [ // 二级路由
+      children: [ // 二级路由
         {
           path: ':id', // 冒号标记id为变量,可传入
           component: SingerDetail
