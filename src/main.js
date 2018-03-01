@@ -5,7 +5,7 @@ import 'common/stylus/index.styl'
 import fastclick from 'fastclick'
 import router from './router'
 import VueLazyLoad from 'vue-lazyload'
-//注册store
+// 注册store
 import store from './store'
 
 // 解决整个页面的点击事件的300ms延迟的问题
