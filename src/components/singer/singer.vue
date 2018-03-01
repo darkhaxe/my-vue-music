@@ -37,6 +37,7 @@
         setSinger: 'SET_SINGER'
       }),
       selectSinger (singer) {
+        // 页面跳转到子路由
         this.$router.push({
           path: `singer/${singer.id}`
         })

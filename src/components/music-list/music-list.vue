@@ -1,6 +1,6 @@
 <template>
   <!-- 歌曲列表,多处使用,抽取成公共组件 -->
-  <div class="msuic-list">
+  <div class="music-list">
     <div class="back">
       <i class="icon-back"></i>
     </div>

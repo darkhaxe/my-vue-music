@@ -10,6 +10,7 @@
       <li v-for="group in data" class="list-group" ref="listGroup">
         <h2 class="list-group-title"> {{group.title}}</h2><!-- 顶部的歌手对应title-->
         <ul>
+          <!-- 将事件派发到父组件,业务逻辑由父组件据此处理,如跳转页面并获取url资源-->
           <li @click="selectItem(item)" v-for="item in group.items" class="list-group-item">
             <img class="avatar" v-lazy="item.avatar"/>
             <span class="name">{{item.name}}</span>
@@ -84,6 +85,7 @@
     methods: {
       /**
        * 派发点击事件到组件外部,使用$emit
+       * @param item 实际是singer,父组件singer.vue,方法selectSinger的参数获取到这个值
        */
       selectItem (item) {
         this.$emit('select', item)
