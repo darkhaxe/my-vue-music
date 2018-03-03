@@ -6,6 +6,7 @@
 
 <script type="text/ecmascript-6">
   import BScroll from 'better-scroll'
+
   export default {
     props: {
       probeType: {
@@ -25,21 +26,22 @@
         default: false
       }
     },
-    mounted() {
+    mounted () {
       setTimeout(() => {
         this._initScroll()
       }, 20)
     },
     methods: {
-      _initScroll() {
+      _initScroll () {
         if (!this.$refs.wrapper) {
           return
         }
-        this.scroll = new BScroll(this.$refs.wrapper, {
-          probeType: this.probeType,
-          click: this.click
-        })
-        // 派发事件出去
+        this.scroll = new BScroll(this.$refs.wrapper,
+          {
+            probeType: this.probeType,
+            click: this.click
+          })
+        // 派发事件出去,父组件可通过属性的@scroll方法获取到pos对象
         if (this.listenScroll) {
           let me = this
           this.scroll.on('scroll', (pos) => {
@@ -50,24 +52,24 @@
       /**
        * 代理better-scroll的方法
        */
-      enable() {
+      enable () {
         this.scroll && this.scroll.enable()
       },
-      disable() {
+      disable () {
         this.scroll && this.scroll.disable()
       },
-      refresh() {
+      refresh () {
         this.scroll && this.scroll.refresh()
       },
-      scrollTo() {
+      scrollTo () {
         this.scroll && this.scroll.scrollTo.apply(this.scroll, arguments)
       },
-      scrollToElement() {
+      scrollToElement () {
         this.scroll && this.scroll.scrollToElement.apply(this.scroll, arguments)
       }
     },
     watch: {
-      data() { // data变化时刷新数据
+      data () { // data变化时刷新数据
         setTimeout(() => {
 //          console.log('---------->watch')
           this.refresh()

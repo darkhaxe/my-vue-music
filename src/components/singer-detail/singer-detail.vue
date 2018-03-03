@@ -57,7 +57,7 @@
             ret.push(createSong(musicData))
           }
         })
-        console.log('singer-detail _normalizeSongs songs:' + ret)
+//        console.log('singer-detail _normalizeSongs songs:' + ret)
         return ret
       }
     }
