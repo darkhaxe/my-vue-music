@@ -6,13 +6,22 @@
     </div>
     <h1 class="title" v-html="title"></h1>
     <!-- bgStyle:计算属性传入图片的url-->
-    <div class="bg-image" :style="bgStyle">
+    <div class="bg-image" :style="bgStyle" ref="bgImage">
+      <!-- 蒙层样式-->
       <div class="filter"></div>
     </div>
+    <scroll :data="songs" ref="list" class="list">
+      <div class="song-list-wrapper">
+        <song-list :songs="songs"></song-list>
+      </div>
+    </scroll>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+  import Scroll from 'base/scroll/scroll'
+  import SongList from 'base/song-list/song-list'
+
   export default {
     // --------接收父组件传递的数据的格式--------
     props: {
@@ -20,7 +29,7 @@
         type: String,
         default: ''
       },
-      song: {
+      songs: {
         type: Array,
         default: function () {
           return []
@@ -32,11 +41,21 @@
       }
     },
     // ----------------------------------------
+    mounted () {
+      /* 根据不同浏览器,顶部的歌手背景图的高度不一样,需要实时计算设置Scroll组件的Top值
+      说明:
+      this.$refs.list为Scroll组件(Component)
+      */
+      this.$refs.list.$el.style.top = `${this.$refs.bgImage.clientHeight}px`
+    },
     computed: {
       bgStyle () {
         console.log(this.bgImage)
         return `background-image:url(${this.bgImage})`
       }
+    },
+    components: {
+      Scroll, SongList
     }
   }
 </script>
