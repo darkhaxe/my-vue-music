@@ -118,7 +118,6 @@
        * @param index
        */
       selectItem (item, index) {
-        console.log('music-list:selectItem' + this.songs)
         this.selectPlay({
           songlist: this.songs,
           index
