@@ -32,7 +32,7 @@
             ref="list"
             class="list">
       <div class="song-list-wrapper">
-        <song-list :songs="songs"></song-list>
+        <song-list @select="selectItem" :songs="songs"></song-list>
       </div>
       <div v-show="!songs.length" class="loading-container">
         <loading></loading>
@@ -46,6 +46,7 @@
   import SongList from 'base/song-list/song-list'
   import { prefixStyle } from 'common/js/dom'
   import Loading from 'base/loading/loading'
+  import { mapActions } from 'vuex'
 
   const RESERVED_HEIGHT = 40
   const transform = prefixStyle('transform')
@@ -110,7 +111,20 @@
       },
       back () {
         this.$router.back()
-      }
+      },
+      /**
+       * 提交vuex的action操作,改变state状态
+       * @param item 在本方法中未使用
+       * @param index
+       */
+      selectItem (item, index) {
+        console.log('music-list:selectItem' + this.songs)
+        this.selectPlay({
+          songlist: this.songs,
+          index
+        })
+      },
+      ...mapActions(['selectPlay'])
     },
     watch: {
       scrollY (newY) {
