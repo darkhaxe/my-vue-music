@@ -22,7 +22,7 @@
         <div class="middle"><!-- -->
           <div class="middle-l">
             <div class="cd-wrapper" ref="cdWrapper"><!-- 引用用于实现动画-->
-              <div class="cd">
+              <div class="cd" :class="cdRotate">
                 <img class="image" :src="currentSong.image">
               </div>
             </div>
@@ -37,7 +37,7 @@
               <i class="icon-prev"></i>
             </div>
             <div class="icon i-center">
-              <i class="icon-play"></i>
+              <i @click="togglePlaying" :class="playIcon"></i>
             </div>
             <div class="icon i-right">
               <i class="icon-next"></i>
@@ -52,20 +52,21 @@
     <transition name="mini">
       <div class="mini-player" @click="open" v-show="!fullScreen">
         <div class="icon">
-          <img width="40" height="40" :src="currentSong.image">
+          <img width="40" height="40" :class="cdRotate" :src="currentSong.image">
         </div>
         <div class="text">
           <h2 class="name" v-html="currentSong.name"></h2>
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
         <div class="control">
+          <i @click.stop="togglePlaying" :class="miniIcon"></i>
         </div>
         <div class="control">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
-
+    <audio ref="audio" :src="currentSong.url"></audio>
   </div>
 </template>
 
@@ -77,14 +78,47 @@
   const transform = prefixStyle('transform')
   //  const cdAnimeName = 'move'
   export default {
+
     computed: {
+      playIcon () {
+        return this.playing ? 'icon-pause' : 'icon-play'
+      },
+      miniIcon () { // 图标字体库的样式
+        return this.playing ? 'icon-pause-mini' : 'icon-play-mini'
+      },
+      cdRotate () {
+        return this.playing ? 'play' : 'play pause'
+      },
       ...mapGetters([
         'fullScreen',
         'playlist',
-        'currentSong'
+        'currentSong',
+        'playing'
       ])
     },
+    watch: {
+      currentSong () {
+        this.$nextTick(() => {
+//          在某个动作有可能改变DOM元素结构的时候，对DOM一系列的js操作都要放进Vue.nextTick()的回调函数中
+          // 在调用播放的同时去请求src的加载url,将报DomException
+          this.$refs.audio.play()
+        })
+      },
+      /**
+       * 监测全局状态playing的变化
+       */
+      playing (newPlaying) {
+        const audio = this.$refs.audio
+        this.$nextTick(() => {
+          newPlaying ? audio.play() : audio.pause()
+        })
+      }
+    },
     methods: {
+      ...mapMutations({
+        setFullScreen: 'SET_FULL_SCREEN',
+        setPlayingState: 'SET_PLAYING_STATE'
+      }),
       back () {
         this.setFullScreen(false)
       },
@@ -169,7 +203,10 @@
           scale
         }
       },
-      ...mapMutations({setFullScreen: 'SET_FULL_SCREEN'})
+      togglePlaying () {
+        // 对state中的全局状态取反
+        this.setPlayingState(!this.playing)
+      }
     }
   }
 </script>
