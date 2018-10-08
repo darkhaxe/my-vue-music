@@ -1,6 +1,9 @@
 # my-vue-music
 
-> A Vue.js project
+> 代理qq music练习Vue单页应用的项目
+
+# demo演示
+http://haxe.s3.natapp.cc/#/singer
 
 ## Build Setup
 
