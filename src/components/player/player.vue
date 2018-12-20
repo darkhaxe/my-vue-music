@@ -31,13 +31,13 @@
         <div class="bottom"><!-- 操作按钮-->
           <div class="progress-wrapper">
             <!-- 左侧 -->
-            <span class="time time-l"></span>
+            <span class="time time-l">{{format(currentTime)}}</span>
             <!-- flex布局 -->
             <div class="progress-bar-wrapper">
-              <progress-bar></progress-bar>
+              <progress-bar :percent="percent" @percentChange="onProgressBarChange"></progress-bar>
             </div>
             <!-- 右侧 -->
-            <span class="time time-r"></span>
+            <span class="time time-r">{{format(currentSong.duration)}}</span>
           </div>
           <div class="operators">
             <div class="icon i-left">
@@ -69,7 +69,10 @@
           <p class="desc" v-html="currentSong.singer"></p>
         </div>
         <div class="control">
-          <i @click.stop="togglePlaying" :class="miniIcon"></i>
+          <!-- 圆形进度条 包裹 播放按钮 -->
+          <progress-circle :radius="progress_circle_radius" :percent="percent">
+            <i @click.stop="togglePlaying" class="icon-mini" :class="miniIcon"></i>
+          </progress-circle>
         </div>
         <div class="control">
           <i class="icon-playlist"></i>
@@ -86,6 +89,7 @@
   import { prefixStyle } from 'common/js/dom'
   import animations from 'create-keyframe-animation'
   import ProgressBar from 'base/progress-bar/progress-bar'
+  import ProgressCircle from 'base/progress-circle/progress-circle'
 
   const transform = prefixStyle('transform')
   //  const cdAnimeName = 'move'
@@ -93,11 +97,13 @@
     data () {
       return {
         songReady: false,
-        currentTime: 0
+        currentTime: 0,
+        progress_circle_radius: 32
       }
     },
     components: {
-      ProgressBar
+      ProgressBar,
+      ProgressCircle
     },
     computed: {
       playIcon () {
@@ -112,6 +118,10 @@
       disableCls () {
         return this.songReady ? '' : 'disable'
       },
+      // 播放进度
+      percent () {
+        return this.currentTime / this.currentSong.duration
+      },
       ...mapGetters([
         'fullScreen',
         'playlist',
@@ -123,7 +133,6 @@
     watch: {
       currentSong () {
         const audio = this.$refs.audio
-        console.log(`url:${audio.url}`)
         this.$nextTick(() => {
           // dom ready之后再调用play
           // 在某个动作有可能改变DOM元素结构的时候，对DOM一系列的js操作都要放进Vue.nextTick()的回调函数中
@@ -285,6 +294,13 @@
           len++
         }
         return num
+      },
+      // 子组件的播放进度条变化
+      onProgressBarChange (percent) {
+        this.$refs.audio.currentTime = this.currentSong.duration * percent
+        if (!this.playing) {
+          this.togglePlaying()
+        }
       }
     }
   }
