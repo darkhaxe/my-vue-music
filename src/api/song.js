@@ -26,7 +26,8 @@ export function getLyric (mid) {
 }
 
 export function getSongsUrl (songs) {
-  const url = 'http://ustbhuangyi.com/music/api/getPurlUrl' // debug ? '/api/getPurlUrl' : 'http://ustbhuangyi.com/music/api/getPurlUrl'
+  const url = debug ? '/api/getPurlUrl' : 'http://ustbhuangyi.com/music/api/getPurlUrl'
+  // const url = 'https://u.y.qq.com/cgi-bin/musicu.fcg'
 
   let mids = []
   let types = []

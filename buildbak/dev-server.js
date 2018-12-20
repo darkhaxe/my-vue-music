@@ -11,7 +11,10 @@ var express = require('express')
 var webpack = require('webpack')
 var proxyMiddleware = require('http-proxy-middleware')
 var webpackConfig = require('./webpack.dev.conf')
-var axios = require('axios') //引入axios模块
+var axios = require('axios')
+
+// var CircularJSON = require('circular-json') //解决Json对象循环引用
+const bodyParser = require('body-parser')
 
 // default port where dev server listens for incoming traffic
 var port = process.env.PORT || config.dev.port
@@ -22,11 +25,10 @@ var autoOpenBrowser = !!config.dev.autoOpenBrowser
 var proxyTable = config.dev.proxyTable
 
 var app = express()
-//---------------------------------------------------------
-// axios反向代理获取歌单数据
+
 var apiRoutes = express.Router()
 
-apiRoutes.get('/getDiscList', function (req, resp) {
+apiRoutes.get('/getDiscList', function (req, res) {
   var url = 'https://c.y.qq.com/splcloud/fcgi-bin/fcg_get_diss_by_tag.fcg'
   axios.get(url, {
     headers: {
@@ -35,13 +37,81 @@ apiRoutes.get('/getDiscList', function (req, resp) {
     },
     params: req.query
   }).then((response) => {
-    resp.json(response.data)
+    res.json(response.data)
   }).catch((e) => {
     console.log(e)
   })
 })
+
+apiRoutes.get('/getCdInfo', function (req, res) {
+  var url = 'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg'
+  axios.get(url, {
+    headers: {
+      referer: 'https://c.y.qq.com/',
+      host: 'c.y.qq.com'
+    },
+    params: req.query
+  }).then((response) => {
+    var ret = response.data
+    if (typeof ret === 'string') {
+      var reg = /^\w+\(({.+})\)$/
+      var matches = ret.match(reg)
+      if (matches) {
+        ret = JSON.parse(matches[1])
+      }
+    }
+    res.json(ret)
+  }).catch((e) => {
+    console.log(e)
+  })
+})
+
+apiRoutes.get('/lyric', function (req, res) {
+  var url = 'https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg'
+
+  axios.get(url, {
+    headers: {
+      referer: 'https://c.y.qq.com/',
+      host: 'c.y.qq.com'
+    },
+    params: req.query
+  }).then((response) => {
+    var ret = response.data
+    if (typeof ret === 'string') {
+      var reg = /^\w+\(({.+})\)$/
+      console.log(+new Date)
+      var matches = ret.match(reg)
+      console.log(+new Date)
+      if (matches) {
+        ret = JSON.parse(matches[1])
+      }
+    }
+    res.json(ret)
+  }).catch((e) => {
+    console.log(e)
+  })
+})
+/**
+ * 代理音乐请求接口
+ */
+apiRoutes.post('/getPurlUrl', bodyParser.json(), function (req, res) {
+  // console.log(`apiRoutes.post /getPurlUrl ${CircularJSON.stringify(req)}`)
+  var url = 'https://u.y.qq.com/cgi-bin/musicu.fcg'
+  axios.post(url, req.body, {
+    headers: {
+      referer: 'https://y.qq.com/',
+      origin: 'https://y.qq.com',
+      'Content-type': 'application/x-www-form-urlencoded'
+    }
+  }).then((response) => {
+    // console.log(`getPurlUrl.res:${CircularJSON.stringify(response)}`)
+    res.json(response.data)
+  }).catch((e) => {
+    console.error(e)
+  })
+})
+
 app.use('/api', apiRoutes)
-//---------------------------------------------------------
 
 var compiler = webpack(webpackConfig)
 
@@ -51,7 +121,8 @@ var devMiddleware = require('webpack-dev-middleware')(compiler, {
 })
 
 var hotMiddleware = require('webpack-hot-middleware')(compiler, {
-  log: () => {}
+  log: () => {
+  }
 })
 // force page reload when html-webpack-plugin template changes
 compiler.plugin('compilation', function (compilation) {
@@ -96,7 +167,7 @@ devMiddleware.waitUntilValid(() => {
   console.log('> Listening at ' + uri + '\n')
   // when env is testing, don't need open it
   if (autoOpenBrowser && process.env.NODE_ENV !== 'testing') {
-    opn(uri)
+    // 不打开浏览器 opn(uri)
   }
   _resolve()
 })

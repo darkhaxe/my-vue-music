@@ -14,12 +14,13 @@
     "axios": "^0.16.2",
     "babel-runtime": "^6.26.0",
     "better-scroll": "^0.1.15",
+    "circular-json": "^0.5.9",
+    "create-keyframe-animation": "^0.1.0",
     "fastclick": "^1.0.6",
     "jsonp": "0.2.1",
     "vue": "^2.5.13",
     "vue-lazyload": "^1.2.1",
     "vue-router": "^2.8.1",
-    "create-keyframe-animation": "^0.1.0",
     "vuex": "^2.5.0"
   },
   "devDependencies": {
@@ -39,6 +40,7 @@
     "connect-history-api-fallback": "^1.5.0",
     "copy-webpack-plugin": "^4.4.2",
     "css-loader": "^0.28.10",
+    "body-parser": "^1.18.2",
     "eslint": "^3.19.0",
     "eslint-config-standard": "^6.2.1",
     "eslint-friendly-formatter": "^2.0.7",
