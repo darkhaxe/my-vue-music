@@ -10,7 +10,7 @@
       <div class="normal-player" v-show="fullScreen">
         <!-- 背景图-->
         <div class="background">
-          <img width="100%" height="100%" :src="currentSong.image">
+          <img width="100%" height="100%" :src="currentSong.image"/>
         </div>
         <div class="top"><!-- 顶部-->
           <div class="back" @click="back">
@@ -31,13 +31,13 @@
         <div class="bottom"><!-- 操作按钮-->
           <div class="progress-wrapper">
             <!-- 左侧 -->
-            <span class="time time-l">{{format(currentTime)}}</span>
+            <span class="time time-l">{{formatTime(currentTime)}}</span>
             <!-- flex布局 -->
             <div class="progress-bar-wrapper">
               <progress-bar :percent="percent" @percentChange="onProgressBarChange"></progress-bar>
             </div>
             <!-- 右侧 -->
-            <span class="time time-r">{{format(currentSong.duration)}}</span>
+            <span class="time time-r">{{formatTime(currentSong.duration)}}</span>
           </div>
           <div class="operators">
             <div class="icon i-left">
@@ -90,15 +90,20 @@
   import animations from 'create-keyframe-animation'
   import ProgressBar from 'base/progress-bar/progress-bar'
   import ProgressCircle from 'base/progress-circle/progress-circle'
+  import { formatTime } from 'common/js/util.js'
 
   const transform = prefixStyle('transform')
   //  const cdAnimeName = 'move'
   export default {
     data () {
       return {
+        // 阻止快速点击切换歌曲导致的domException
         songReady: false,
         currentTime: 0,
-        progress_circle_radius: 32
+        // 播放按钮进度条的半径
+        progress_circle_radius: 32,
+        // 引入工具类的方法
+        formatTime: formatTime
       }
     },
     components: {
@@ -279,21 +284,6 @@
        */
       updateTime (e) {
         this.currentTime = e.target.currentTime
-      },
-      format (interval) {
-        interval = Math.floor(interval)
-        const minute = Math.floor(interval / 60)
-        const second = this._pad(interval % 60)
-        return `${minute}:${second}`
-      },
-      // 数值补0
-      _pad (num, n = 2) {
-        let len = num.toString().length
-        while (len < n) {
-          num = '0' + num
-          len++
-        }
-        return num
       },
       // 子组件的播放进度条变化
       onProgressBarChange (percent) {

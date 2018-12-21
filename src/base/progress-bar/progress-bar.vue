@@ -14,11 +14,13 @@
 </template>
 
 <script type="text/ecmascript-6">
-  import {prefixStyle} from 'common/js/dom'
+  import { prefixStyle } from 'common/js/dom'
 
   const progressBtnWidth = 16
   const transform = prefixStyle('transform')
-
+  /**
+   * 播放进度条
+   */
   export default {
     props: {
       percent: {
@@ -26,29 +28,39 @@
         default: 0
       }
     },
-    created() {
-      this.touch = {}
+    created () {
+      this.touch = {
+        // 是否在拖动进度条
+        initiated: false,
+        // 起始位置
+        startX: 0,
+        // 进度距离左端的宽度
+        left: 0
+      }
     },
     methods: {
-      progressTouchStart(e) {
+      progressTouchStart (e) {
         this.touch.initiated = true
         this.touch.startX = e.touches[0].pageX
         this.touch.left = this.$refs.progress.clientWidth
       },
-      progressTouchMove(e) {
+      progressTouchMove (e) {
         if (!this.touch.initiated) {
           return
         }
         const deltaX = e.touches[0].pageX - this.touch.startX
-        const offsetWidth = Math.min(this.$refs.progressBar.clientWidth - progressBtnWidth, Math.max(0, this.touch.left + deltaX))
+        const offsetWidth = Math.min(this.$refs.progressBar.clientWidth - progressBtnWidth,
+          Math.max(0, this.touch.left + deltaX))
         this._offset(offsetWidth)
-        this.$emit('percentChanging', this._getPercent())
+
+        this._triggerPercent()
+        // this.$emit('percentChanging', this._getPercent())
       },
-      progressTouchEnd() {
+      progressTouchEnd () {
         this.touch.initiated = false
         this._triggerPercent()
       },
-      progressClick(e) {
+      progressClick (e) {
         const rect = this.$refs.progressBar.getBoundingClientRect()
         const offsetWidth = e.pageX - rect.left
         this._offset(offsetWidth)
@@ -56,27 +68,28 @@
         // this._offset(e.offsetX)
         this._triggerPercent()
       },
-      setProgressOffset(percent) {
+      setProgressOffset (percent) {
         if (percent >= 0 && !this.touch.initiated) {
           const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
           const offsetWidth = percent * barWidth
           this._offset(offsetWidth)
         }
       },
-      _triggerPercent() {
+      // 派发播放进度到父组件
+      _triggerPercent () {
         this.$emit('percentChange', this._getPercent())
       },
-      _offset(offsetWidth) {
+      _offset (offsetWidth) {
         this.$refs.progress.style.width = `${offsetWidth}px`
         this.$refs.progressBtn.style[transform] = `translate3d(${offsetWidth}px,0,0)`
       },
-      _getPercent() {
+      _getPercent () {
         const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth
         return this.$refs.progress.clientWidth / barWidth
       }
     },
     watch: {
-      percent(newPercent) {
+      percent (newPercent) {
         this.setProgressOffset(newPercent)
       }
     }
@@ -88,21 +101,25 @@
 
   .progress-bar
     height: 30px
+
     .bar-inner
       position: relative
       top: 13px
       height: 4px
       background: rgba(0, 0, 0, 0.3)
+
       .progress
         position: absolute
         height: 100%
         background: $color-theme
+
       .progress-btn-wrapper
         position: absolute
         left: -8px
         top: -13px
         width: 30px
         height: 30px
+
         .progress-btn
           position: relative
           top: 7px

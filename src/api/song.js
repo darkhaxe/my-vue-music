@@ -1,5 +1,5 @@
 import { commonParams } from './config'
-import { getUid } from 'common/js/uid'
+import { uuid } from 'common/js/util.js'
 import axios from 'axios'
 import { ERR_OK } from 'api/config'
 
@@ -87,7 +87,7 @@ export function getSongsUrl (songs) {
 }
 
 function genUrlMid (mids, types) {
-  const guid = getUid()
+  const guid = uuid()
   return {
     module: 'vkey.GetVkeyServer',
     method: 'CgiGetVkey',
